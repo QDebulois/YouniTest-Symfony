@@ -42,4 +42,9 @@ class ApiController extends AbstractController
         ]);
     }
 
+    #[Route('/api/user/login', name: 'app_api_login')]
+    public function apiUserLogin(): JsonResponse
+    {
+        // Géré par JWT -> config/packages/security.yaml
+    }
 }

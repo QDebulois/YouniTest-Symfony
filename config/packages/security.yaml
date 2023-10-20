@@ -25,6 +25,7 @@ security:
             stateless: true
             provider: app_user_provider
             jwt: ~
+
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
