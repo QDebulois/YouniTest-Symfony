@@ -1,0 +1,18 @@
+<ul>
+  <li><a href="{{ path("app_home") }}">Accueil</a></li>
+  {% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
+    <li><a href="{{ path("app_post_new") }}">Créer un post</a></li>
+  {% endif %}
+  <li><a href="{{ path("app_post_index") }}">Voir les posts</a></li>
+  {% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
+    <li><a href="{{ path("app_post_new") }}">Ajouter une catégorie</a></li>
+  {% endif %}
+  <li><a href="{{ path("app_category_index") }}">Voir les catégories</a></li>
+  {% if not is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+    <li><a href="{{ path("app_user_new") }}">S'inscrire</a></li>
+    <li><a href="{{ path("app_login") }}">Se connecter</a></li>
+  {% else %}
+    <li><a href="{{ path("app_user_edit", {"id": app.user.id}) }}">Mon compte</a></li>
+    <li><a href="{{ path("app_logout") }}">Se déconnecter</a></li>
+  {% endif %}
+</ul>
