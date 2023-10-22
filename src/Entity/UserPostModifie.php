@@ -16,11 +16,11 @@ class UserPostModifie
     #[ORM\Column]
     private ?\DateTimeImmutable $updated_at = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'userPostModifie')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Post $post = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'userPostModifie')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 

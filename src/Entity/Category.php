@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CategoryRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\User;
 
@@ -20,9 +22,17 @@ class Category
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
 
-    #[ORM\ManyToOne(cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'category', targetEntity: UserCategoryModifie::class, orphanRemoval: true)]
+    private Collection $userCategoryModifie;
+
+    #[ORM\ManyToOne(inversedBy: 'categories')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
+
+    public function __construct()
+    {
+        $this->userCategoryModifie = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -53,12 +63,42 @@ class Category
         return $this;
     }
 
+    /**
+     * @return Collection<int, UserCategoryModifie>
+     */
+    public function getUserCategoryModifie(): Collection
+    {
+        return $this->userCategoryModifie;
+    }
+
+    public function addUserCategoryModifie(UserCategoryModifie $userCategoryModifie): static
+    {
+        if (!$this->userCategoryModifie->contains($userCategoryModifie)) {
+            $this->userCategoryModifie->add($userCategoryModifie);
+            $userCategoryModifie->setCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserCategoryModifie(UserCategoryModifie $userCategoryModifie): static
+    {
+        if ($this->userCategoryModifie->removeElement($userCategoryModifie)) {
+            // set the owning side to null (unless already changed)
+            if ($userCategoryModifie->getCategory() === $this) {
+                $userCategoryModifie->setCategory(null);
+            }
+        }
+
+        return $this;
+    }
+
     public function getUser(): ?User
     {
         return $this->user;
     }
 
-    public function setUser(User $user): static
+    public function setUser(?User $user): static
     {
         $this->user = $user;
 

@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PostRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -23,13 +25,21 @@ class Post
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
 
-    #[ORM\ManyToOne(cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
+
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: UserPostModifie::class, orphanRemoval: true)]
+    private Collection $userPostModifie;
+
+    public function __construct()
+    {
+        $this->userPostModifie = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -92,6 +102,36 @@ class Post
     public function setCategory(Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserPostModifie>
+     */
+    public function getUserPostModifie(): Collection
+    {
+        return $this->userPostModifie;
+    }
+
+    public function addUserPostModifie(UserPostModifie $userPostModifie): static
+    {
+        if (!$this->userPostModifie->contains($userPostModifie)) {
+            $this->userPostModifie->add($userPostModifie);
+            $userPostModifie->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserPostModifie(UserPostModifie $userPostModifie): static
+    {
+        if ($this->userPostModifie->removeElement($userPostModifie)) {
+            // set the owning side to null (unless already changed)
+            if ($userPostModifie->getPost() === $this) {
+                $userPostModifie->setPost(null);
+            }
+        }
 
         return $this;
     }

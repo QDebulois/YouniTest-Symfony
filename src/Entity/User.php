@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -29,6 +31,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Category::class, orphanRemoval: true)]
+    private Collection $categories;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserPostModifie::class, orphanRemoval: true)]
+    private Collection $userPostModifie;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserCategoryModifie::class, orphanRemoval: true)]
+    private Collection $userCategoryModifie;
+
+    public function __construct()
+    {
+        $this->userPostModifie = new ArrayCollection();
+        $this->userCategoryModifie = new ArrayCollection();
+        $this->categories = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -108,6 +126,96 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeImmutable $created_at): static
     {
         $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Category>
+     */
+    public function getCategories(): Collection
+    {
+        return $this->categories;
+    }
+
+    public function addCategory(Category $category): static
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+            $category->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(Category $category): static
+    {
+        if ($this->categories->removeElement($category)) {
+            // set the owning side to null (unless already changed)
+            if ($category->getUser() === $this) {
+                $category->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserPostModifie>
+     */
+    public function getUserPostModifie(): Collection
+    {
+        return $this->userPostModifie;
+    }
+
+    public function addUserPostModifie(UserPostModifie $userPostModifie): static
+    {
+        if (!$this->userPostModifie->contains($userPostModifie)) {
+            $this->userPostModifie->add($userPostModifie);
+            $userPostModifie->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserPostModifie(UserPostModifie $userPostModifie): static
+    {
+        if ($this->userPostModifie->removeElement($userPostModifie)) {
+            // set the owning side to null (unless already changed)
+            if ($userPostModifie->getUser() === $this) {
+                $userPostModifie->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, UserCategoryModifie>
+     */
+    public function getUserCategoryModifie(): Collection
+    {
+        return $this->userCategoryModifie;
+    }
+
+    public function addUserCategoryModifie(UserCategoryModifie $userCategoryModifie): static
+    {
+        if (!$this->userCategoryModifie->contains($userCategoryModifie)) {
+            $this->userCategoryModifie->add($userCategoryModifie);
+            $userCategoryModifie->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserCategoryModifie(UserCategoryModifie $userCategoryModifie): static
+    {
+        if ($this->userCategoryModifie->removeElement($userCategoryModifie)) {
+            // set the owning side to null (unless already changed)
+            if ($userCategoryModifie->getUser() === $this) {
+                $userCategoryModifie->setUser(null);
+            }
+        }
 
         return $this;
     }
