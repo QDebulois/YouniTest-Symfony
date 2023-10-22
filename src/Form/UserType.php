@@ -26,7 +26,14 @@ class UserType extends AbstractType
             ->add("isAdmin", CheckboxType::class, [
                 "mapped" => false,
                 "required" => false,
-                "label" => "Is admin ?"
+                "row_attr" => [
+                    "class" => "alert alert-warning"
+                ],
+                "label" => "Pour faciliter le process: Est Admin ?",
+                "label_attr" => [
+                    "class" => "me-2"
+                ]
+
             ])
         ;
     }
