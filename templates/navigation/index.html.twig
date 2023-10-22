@@ -1,32 +1,34 @@
-<ul class="m-3">
-  <li><a href="{{ path("app_home") }}">Accueil</a></li>
-  {% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
-    <li><a href="{{ path("app_post_new") }}">Créer un post</a></li>
-  {% endif %}
-  <li><a href="{{ path("app_post_index") }}">Voir les posts</a></li>
-  {% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
-    <li><a href="{{ path("app_post_new") }}">Ajouter une catégorie</a></li>
-  {% endif %}
-  <li><a href="{{ path("app_category_index") }}">Voir les catégories</a></li>
-  {% if not is_granted('IS_AUTHENTICATED_REMEMBERED') %}
-    <li><a href="{{ path("app_user_new") }}">S'inscrire</a></li>
-    <li><a href="{{ path("app_login") }}">Se connecter</a></li>
-  {% else %}
-    <li><a href="{{ path("app_logout") }}">Se déconnecter</a></li>
-  {% endif %}
-</ul>
+<nav class="d-flex justify-content-arround gap-5 mx-5">
+  <div class="list-group m-3">
+    <a class="list-group-item {{ app.current_route == "app_home" ? "active" : "" }}" href="{{ path("app_home") }}">Accueil</a>
+    {% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
+      <a class="list-group-item {{ app.current_route == "app_post_new" ? "active" : "" }}" href="{{ path("app_post_new") }}">Créer un post</a>
+    {% endif %}
+    <a class="list-group-item {{ app.current_route == "app_post_index" ? "active" : "" }}" href="{{ path("app_post_index") }}">Voir les posts</a>
+    {% if is_granted('ROLE_ADMIN') %}
+      <a class="list-group-item {{ app.current_route == "app_category_new" ? "active" : "" }}" href="{{ path("app_category_new") }}">Ajouter une catégorie</a>
+    {% endif %}
+    <a class="list-group-item {{ app.current_route == "app_category_index" ? "active" : "" }}" href="{{ path("app_category_index") }}">Voir les catégories</a>
+    {% if not is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+      <a class="list-group-item {{ app.current_route == "app_login" ? "active" : "" }}" href="{{ path("app_login") }}">Se connecter</a>
+      <a class="list-group-item {{ app.current_route == "app_user_new" ? "active" : "" }}" href="{{ path("app_user_new") }}">S'inscrire</a>
+    {% else %}
+      <a class="list-group-item" href="{{ path("app_logout") }}">Se déconnecter</a>
+    {% endif %}
+  </div>
 
-{% if app.user %}
-  <div class="alert alert-success mx-5">
-    <ul>
-      <li>You are logged in as {{ app.user.userIdentifier }}</li>
-      <li>Roles {{ app.user.getRoles|json_encode() }}</li>
-    </ul>
-  </div>
-{% else %}
-  <div class="alert alert-warning mx-5">
-    <ul>
-      <li>You are not logged in</li>
-    </ul>
-  </div>
-{% endif %}
+  {% if app.user %}
+    <div class="d-flex flex-column justify-content-center m-3">
+      <ul class="alert alert-success">
+        <li class="list-group-item">You are logged in as <strong>{{ app.user.userIdentifier }}</strong></li>
+        <li class="list-group-item">Roles <strong>{{ app.user.getRoles|json_encode() }}</strong></li>
+      </ul>
+    </div>
+  {% else %}
+    <div class="d-flex flex-column justify-content-center m-3">
+      <ul class="alert alert-warning">
+        <li class="list-group-item">You are not logged in</li>
+      </ul>
+    </div>
+  {% endif %}
+</nav>

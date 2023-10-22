@@ -26,6 +26,9 @@ class UserController extends AbstractController
                 $user->getPassword()
             );
             $user->setPassword($hashedPassword);
+            if ($form->get("isAdmin")->getData()) {
+                $user->setRoles(["ROLE_ADMIN"]);
+            }
             $user->setCreatedAt(new \DateTimeImmutable());
             $em->persist($user);
             $em->flush();

@@ -4,5 +4,6 @@
     {% endif %}
     {{ form_row(form.email, {"attr": {"class": "form-control"}}) }}
     {{ form_row(form.password, {"attr": {"class": "form-control"}}) }}
+    {{ form_row(form.isAdmin, {"attr": {"class": ""}}) }}
     <button class="btn btn-success mx-auto">{{ button_label|default('Inscription') }}</button>
 {{ form_end(form) }}

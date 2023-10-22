@@ -22,6 +22,8 @@ class CategoryController extends AbstractController
         $form = $this->createForm(CategoryType::class, $category);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $category->setUser($this->getUser());
+            $category->setCreatedAt(new \DateTimeImmutable());
             $entityManager->persist($category);
             $entityManager->flush();
             return $this->redirectToRoute('app_category_index', [], Response::HTTP_SEE_OTHER);

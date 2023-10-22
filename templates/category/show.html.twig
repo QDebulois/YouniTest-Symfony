@@ -1,10 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Category{% endblock %}
+{% block title %}Categories{% endblock %}
 
 {% block body %}
-    <h1>Category</h1>
-
+    <h1>Categories</h1>
     <table class="table">
         <tbody>
             <tr>
@@ -21,10 +20,7 @@
             </tr>
         </tbody>
     </table>
-
-    <a href="{{ path('app_category_index') }}">back to list</a>
-
-    <a href="{{ path('app_category_edit', {'id': category.id}) }}">edit</a>
-
+    <a class="btn btn-primary" href="{{ path('app_category_index') }}">Voir les catégories</a>
+    <a class="btn btn-warning" href="{{ path('app_category_edit', {'id': category.id}) }}">Modifier</a>
     {{ include('category/_delete_form.html.twig') }}
 {% endblock %}

@@ -1,17 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Category index{% endblock %}
+{% block title %}Les Category{% endblock %}
 
 {% block body %}
-    <h1>Category index</h1>
-
+    <h1>Les Categories</h1>
     <table class="table">
         <thead>
             <tr>
                 <th>Id</th>
-                <th>Title</th>
-                <th>Created_at</th>
-                <th>actions</th>
+                <th>Titre</th>
+                <th>Créé le</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -21,19 +20,18 @@
                 <td>{{ category.title }}</td>
                 <td>{{ category.createdAt ? category.createdAt|date('Y-m-d H:i:s') : '' }}</td>
                 <td>
-                    <a href="{{ path('app_category_show', {'id': category.id}) }}">show</a>
-                    <a href="{{ path('app_category_edit', {'id': category.id}) }}">edit</a>
+                    <a class="btn btn-primary" href="{{ path('app_category_show', {'id': category.id}) }}">Voir</a>
+                    <a class="btn btn-warning" href="{{ path('app_category_edit', {'id': category.id}) }}">Modifier</a>
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="4">no records found</td>
+                <td colspan="4">Aucun élément enregistré</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
-
     {% if is_granted("ROLE_ADMIN") %}
-      <a href="{{ path('app_category_new') }}">Create new</a>
+      <a class="btn btn-success" href="{{ path('app_category_new') }}">Créer un titre</a>
     {% endif %}
 {% endblock %}
