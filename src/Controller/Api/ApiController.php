@@ -23,7 +23,7 @@ class ApiController extends AbstractController
     {
         // Géré par JWT -> config/packages/security.yaml, username && password obligatoire pour connection
         // Header "content-type: application/json" obligatoire pour être trigger, sinon:
-        $res = new JsonResponse();
+        $res = new JsonResponse("SET THE HEADER AS APPLICATION/JSON, FIELDS REQUIERED: username, password");
         $res->setStatusCode(400);
         return $res;
     }
@@ -34,9 +34,9 @@ class ApiController extends AbstractController
     {
         $USER_GET = function(string $payload, EntityManagerInterface $em) {
             $payload = json_decode($payload, true);
-            if (is_array($payload) && array_key_exists("id", $payload)) {
+            if (is_array($payload) && array_key_exists("user_id", $payload)) {
                 $users = $em->getRepository(User::class)->findBy(
-                    ["id" => $payload["id"]],
+                    ["id" => $payload["user_id"]],
                 );
             } else {
                 $users = $em->getRepository(User::class)->findBy(
@@ -59,17 +59,17 @@ class ApiController extends AbstractController
         };
         $USER_DELETE = function(string $payload, EntityManagerInterface $em) {
             $payload = json_decode($payload, true);
-            if (!array_key_exists("id", $payload ?? [])) {
-                return ["statusCode" => 400, "body" => "'id' field REQUIERED"];
+            if (!array_key_exists("user_id", $payload ?? [])) {
+                return ["statusCode" => 400, "body" => "'user_id' field REQUIERED"];
             }
-            $user = $em->getRepository(User::class)->findOneBy(["id" => $payload["id"]]);
+            $user = $em->getRepository(User::class)->findOneBy(["id" => $payload["user_id"]]);
             if (!$user) {
-                return ["statusCode" => 400, "body" => "No user with ID:".$payload["id"]];
+                return ["statusCode" => 400, "body" => "No user with ID:".$payload["user_id"]];
             }
             $em->remove($user);
             $em->flush();
             $body = [
-                "id" => $payload["id"],
+                "id" => $payload["user_id"],
                 "email" => $user->getEmail(),
                 "roles" => $user->getRoles(),
                 "created_at" => $user->getCreatedAt(),
@@ -121,9 +121,9 @@ class ApiController extends AbstractController
         };
         $POST_GET = function(string $payload, EntityManagerInterface $em) {
             $payload = json_decode($payload, true);
-            if (is_array($payload) && array_key_exists("id", $payload)) {
+            if (is_array($payload) && array_key_exists("post_id", $payload)) {
                 $posts = $em->getRepository(Post::class)->findBy(
-                    ["id" => $payload["id"]]
+                    ["id" => $payload["post_id"]]
                 );
             } else {
                 $posts = $em->getRepository(Post::class)->findBy(
@@ -151,14 +151,14 @@ class ApiController extends AbstractController
                 return ["statusCode" => 401, "body" => "Authentification REQUIERED"];
             }
             $payload = json_decode($payload, true);
-            if (!array_key_exists("id", $payload ?? [])) {
-                return ["statusCode" => 400, "body" => "'id' field REQUIERED"];
+            if (!array_key_exists("post_id", $payload ?? [])) {
+                return ["statusCode" => 400, "body" => "'post_id' field REQUIERED"];
             }
-            $post = $em->getRepository(Post::class)->findOneBy(["id" => $payload["id"]]);
+            $post = $em->getRepository(Post::class)->findOneBy(["id" => $payload["post_id"]]);
             if (!$post) {
-                return ["statusCode" => 400, "body" => "No post with ID:".$payload["id"]];
+                return ["statusCode" => 400, "body" => "No post with ID:".$payload["post_id"]];
             }
-            if (!$this->isGranted("ROLE_ADMIN") || !($this->isGranted("ROLE_USER") && $post->getUser() == $this->getUser())) {
+            if (!$this->isGranted("ROLE_ADMIN") && $post->getUser() != $this->getUser()) {
                 return ["statusCode" => 403, "body" => "Acces FORBIDDEN"];
             }
             unset($payload["id"]);
@@ -190,14 +190,14 @@ class ApiController extends AbstractController
                 return ["statusCode" => 401, "body" => "Authentification REQUIERED"];
             }
             $payload = json_decode($payload, true);
-            if (!array_key_exists("id", $payload ?? [])) {
-                return ["statusCode" => 400, "body" => "'id' field REQUIERED"];
+            if (!array_key_exists("post_id", $payload ?? [])) {
+                return ["statusCode" => 400, "body" => "'post_id' field REQUIERED"];
             }
-            $post = $em->getRepository(Post::class)->findOneBy(["id" => $payload["id"]]);
+            $post = $em->getRepository(Post::class)->findOneBy(["id" => $payload["post_id"]]);
             if (!$post) {
-                return ["statusCode" => 400, "body" => "No post with ID:".$payload["id"]];
+                return ["statusCode" => 400, "body" => "No post with ID:".$payload["post_id"]];
             }
-            if (!$this->isGranted("ROLE_ADMIN") || !($this->isGranted("ROLE_USER") && $post->getUser() == $this->getUser())) {
+            if (!$this->isGranted("ROLE_ADMIN") && $post->getUser() != $this->getUser()) {
                 return ["statusCode" => 403, "body" => null];
             }
             $em->remove($post);
@@ -250,9 +250,9 @@ class ApiController extends AbstractController
         };
         $CATEGORY_GET = function(string $payload, EntityManagerInterface $em) {
             $payload = json_decode($payload, true);
-            if (is_array($payload) && array_key_exists("id", $payload)) {
+            if (is_array($payload) && array_key_exists("category_id", $payload)) {
                 $categories = $em->getRepository(Category::class)->findBy(
-                    ["id" => $payload["id"]]
+                    ["id" => $payload["category_id"]]
                 );
             } else {
                 $categories = $em->getRepository(Category::class)->findBy(
