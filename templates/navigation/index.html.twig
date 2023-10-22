@@ -1,4 +1,4 @@
-<ul>
+<ul class="m-3">
   <li><a href="{{ path("app_home") }}">Accueil</a></li>
   {% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
     <li><a href="{{ path("app_post_new") }}">Créer un post</a></li>
@@ -12,7 +12,21 @@
     <li><a href="{{ path("app_user_new") }}">S'inscrire</a></li>
     <li><a href="{{ path("app_login") }}">Se connecter</a></li>
   {% else %}
-    <li><a href="{{ path("app_user_edit", {"id": app.user.id}) }}">Mon compte</a></li>
     <li><a href="{{ path("app_logout") }}">Se déconnecter</a></li>
   {% endif %}
 </ul>
+
+{% if app.user %}
+  <div class="alert alert-success mx-5">
+    <ul>
+      <li>You are logged in as {{ app.user.userIdentifier }}</li>
+      <li>Roles {{ app.user.getRoles|json_encode() }}</li>
+    </ul>
+  </div>
+{% else %}
+  <div class="alert alert-warning mx-5">
+    <ul>
+      <li>You are not logged in</li>
+    </ul>
+  </div>
+{% endif %}

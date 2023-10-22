@@ -1,4 +1,8 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_start(form, {"attr": {"class": "d-flex flex-column gap-3 m-5"}}) }}
+    {% if not form.vars.valid %}
+      <div class="alert alert-danger">{{ form_errors(form) }}</div>
+    {% endif %}
+    {{ form_row(form.email, {"attr": {"class": "form-control"}}) }}
+    {{ form_row(form.password, {"attr": {"class": "form-control"}}) }}
+    <button class="btn btn-success mx-auto">{{ button_label|default('Inscription') }}</button>
 {{ form_end(form) }}
