@@ -203,7 +203,7 @@ class ApiController extends AbstractController
             $em->remove($post);
             $em->flush();
             $body = [
-                "id" => $payload["id"],
+                "id" => $payload["post_id"],
                 "author" => $post->getUser()->getEmail(),
                 "category" => $post->getCategory()->getTitle(),
                 "title" => $post->getTitle(),

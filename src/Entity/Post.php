@@ -29,7 +29,7 @@ class Post
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
 
@@ -99,7 +99,7 @@ class Post
         return $this->category;
     }
 
-    public function setCategory(Category $category): static
+    public function setCategory(?Category $category): static
     {
         $this->category = $category;
 
