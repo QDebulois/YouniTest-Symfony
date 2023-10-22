@@ -5,6 +5,8 @@ namespace App\Controller\Api;
 use App\Entity\Category;
 use App\Entity\Post;
 use App\Entity\User;
+use App\Entity\UserPostModifie;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,94 +28,43 @@ class ApiController extends AbstractController
         return $res;
     }
 
-    #[Route('/user', name: 'app_api_user', methods: ["POST", "GET", "PATCH", "DELETE"])]
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/user', name: 'app_api_user', methods: ["GET", "DELETE"])]
     public function apiUser(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $uph): JsonResponse
     {
-        // $USER_POST = function(string $payload, EntityManagerInterface $em, UserPasswordHasherInterface $uph) {
-        //     $payload = json_decode($payload, true);
-        //     if (!array_key_exists("email", $payload) || !array_key_exists("password", $payload)) {
-        //         return ["statusCode" => 400, "body" => null];
-        //     }
-        //     if ($em->getRepository(User::class)->findOneBy(["email" => $payload["email"]])) {
-        //         return ["statusCode" => 400, "body" => null];
-        //     }
-        //     $user = new User();
-        //     $hashedPassword = $uph->hashPassword(
-        //         $user,
-        //         $payload["password"],
-        //     );
-        //     $user->setEmail($payload["email"]);
-        //     $user->setPassword($hashedPassword);
-        //     $user->setCreatedAt(new \DateTimeImmutable());
-        //     $em->persist($user);
-        //     $em->flush();
-        //     $body = $user ? [
-        //         "id" => $user->getId(),
-        //         "email" => $user->getEmail(),
-        //         "roles" => $user->getRoles(),
-        //         "created_at" => $user->getCreatedAt(),
-        //     ] : null;
-        //     return ["statusCode" => 201, "body" => $body];
-        // };
         $USER_GET = function(string $payload, EntityManagerInterface $em) {
             $payload = json_decode($payload, true);
-            if (!array_key_exists("id", $payload)) {
-                return ["statusCode" => 400, "body" => null];
+            if (is_array($payload) && array_key_exists("id", $payload)) {
+                $users = $em->getRepository(User::class)->findBy(
+                    ["id" => $payload["id"]],
+                );
+            } else {
+                $users = $em->getRepository(User::class)->findBy(
+                    [],
+                    [],
+                    array_key_exists("offset", $payload ?? []) ? $payload["offset"] : null,
+                    array_key_exists("start", $payload ?? []) ? $payload["start"] : null,
+                );
             }
-            $user = $em->getRepository(User::class)->findOneBy(["id" => $payload["id"]]);
-            $body = $user ? [
-                "id" => $user->getId(),
-                "email" => $user->getEmail(),
-                "roles" => $user->getRoles(),
-                "created_at" => $user->getCreatedAt(),
-            ] : null;
+            $body = [];
+            foreach ($users as $u) {
+                $body[] = [
+                    "id" => $u->getId(),
+                    "email" => $u->getEmail(),
+                    "roles" => $u->getRoles(),
+                    "created_at" => $u->getCreatedAt(),
+                ];
+            }
             return ["statusCode" => 200, "body" => $body];
         };
-        // $USER_PATCH = function(string $payload, EntityManagerInterface $em, UserPasswordHasherInterface $uph) {
-        //     $payload = json_decode($payload, true);
-        //     if (!array_key_exists("id", $payload)) {
-        //         return ["statusCode" => 400, "body" => null];
-        //     }
-        //     $user = $em->getRepository(User::class)->findOneBy(["id" => $payload["id"]]);
-        //     if (!$user) {
-        //         return ["statusCode" => 400, "body" => null];
-        //     }
-        //     unset($payload["id"]);
-        //     foreach ($payload as $key => $value) {
-        //         $setter = "set".ucfirst($key);
-        //         if (method_exists($user, $setter)) {
-        //             if ($key === "password") {
-        //                 $hashedPassword = $uph->hashPassword(
-        //                     $user,
-        //                     $value,
-        //                 );
-        //                 $user->$setter($hashedPassword);
-        //             } else {
-        //                 $user->$setter($value);
-        //             }
-        //         }
-        //     }
-        //     $em->persist($user);
-        //     $em->flush();
-        //     $body = [
-        //         "id" => $user->getId(),
-        //         "email" => $user->getEmail(),
-        //         "roles" => $user->getRoles(),
-        //         "created_at" => $user->getCreatedAt(),
-        //     ];
-        //     if (array_key_exists("password", $payload)) {
-        //         array_push($body, ["password" => $user->getPassword()]);
-        //     }
-        //     return ["statusCode" => 200, "body" => $body];
-        // };
         $USER_DELETE = function(string $payload, EntityManagerInterface $em) {
             $payload = json_decode($payload, true);
-            if (!array_key_exists("id", $payload)) {
-                return ["statusCode" => 400, "body" => null];
+            if (!array_key_exists("id", $payload ?? [])) {
+                return ["statusCode" => 400, "body" => "'id' field REQUIERED"];
             }
             $user = $em->getRepository(User::class)->findOneBy(["id" => $payload["id"]]);
             if (!$user) {
-                return ["statusCode" => 400, "body" => null];
+                return ["statusCode" => 400, "body" => "No user with ID:".$payload["id"]];
             }
             $em->remove($user);
             $em->flush();
@@ -126,9 +77,7 @@ class ApiController extends AbstractController
             return ["statusCode" => 200, "body" => $body];
         };
         $action = match($request->getMethod()) {
-            // "POST" => $USER_POST($request->getContent(), $em, $uph),
             "GET" => $USER_GET($request->getContent(), $em),
-            // "PATCH" => $USER_PATCH($request->getContent(), $em, $uph),
             "DELETE" => $USER_DELETE($request->getContent(), $em),
             default => ["statusCode" => 405, "body" => null]
         };
@@ -137,104 +86,128 @@ class ApiController extends AbstractController
         return $res;
     }
 
-    #[IsGranted('ROLE_USER')]
     #[Route('/post', name: 'app_api_post', methods:["POST", "GET", "PATCH", "DELETE"])]
     public function apiPost(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $POST_POST = function(string $payload, EntityManagerInterface $em) {
-            $user = $this->getUser();
-            dump($user);
-            if (!$user) {
-                return ["statusCode" => 401, "body" => null];
+            if (!$this->getUser()){
+                return ["statusCode" => 401, "body" => "Authentification REQUIERED"];
             }
             $payload = json_decode($payload, true);
-            if (!array_key_exists("category_id", $payload)
-                || !$em->getRepository(Category::class)->findOneBy(["id" => $payload["category_id"]])
-            ) {
-                return ["statusCode" => 400, "body" => null];
+            if (!array_key_exists("category_id", $payload ?? [])) {
+                return ["statusCode" => 400, "body" => "'category_id' field REQUIERED"];
+            }
+            $category = $em->getRepository(Category::class)->findOneBy(["id" => $payload["category_id"]]);
+            if (!$category) {
+                return ["statusCode" => 400, "body" => "No category with ID:".$payload["category_id"]];
             }
             $post = new Post();
-            $post->setUser($user);
-            $post->setCategory($em->getRepository(Category::class)->findOneBy(["id" => $payload["category_id"]]));
-            $post->setTitle($payload["title"] ?? "Pas de titre");
-            $post->setText($payload["text"] ?? "Pas de texte");
+            $post->setUser($this->getUser());
+            $post->setCategory($category);
+            $post->setTitle(array_key_exists("title", $payload) ? $payload["title"] : "Pas de titre");
+            $post->setText(array_key_exists("text", $payload) ? $payload["text"] : "Pas de texte");
             $post->setCreatedAt(new \DateTimeImmutable());
-            $em->persist($post);
-            $em->flush();
-            $body = $post ? [
-                "id" => $post->getId(),
-                "email" => $post->getEmail(),
-                "roles" => $post->getRoles(),
-                "created_at" => $post->getCreatedAt(),
-            ] : null;
-            return ["statusCode" => 201, "body" => $body];
-        };
-        $POST_GET = function(string $payload, EntityManagerInterface $em) {
-            $payload = json_decode($payload, true);
-            if (!array_key_exists("id", $payload)) {
-                return ["statusCode" => 400, "body" => null];
-            }
-            $post = $em->getRepository(User::class)->findOneBy(["id" => $payload["id"]]);
-            $body = $post ? [
-                "id" => $post->getId(),
-                "email" => $post->getEmail(),
-                "roles" => $post->getRoles(),
-                "created_at" => $post->getCreatedAt(),
-            ] : null;
-            return ["statusCode" => 200, "body" => $body];
-        };
-        $POST_PATCH = function(string $payload, EntityManagerInterface $em) {
-            $user = $this->getUser();
-            if (!$user) {
-                return ["statusCode" => 401, "body" => null];
-            }
-            $payload = json_decode($payload, true);
-            if (!array_key_exists("id", $payload)) {
-                return ["statusCode" => 400, "body" => null];
-            }
-            $post = $em->getRepository(User::class)->findOneBy(["id" => $payload["id"]]);
-            if (!$post) {
-                return ["statusCode" => 400, "body" => null];
-            }
-            unset($payload["id"]);
-            foreach ($payload as $key => $value) {
-                $setter = "set".ucfirst($key);
-                if (method_exists($post, $setter)) {
-                    $post->$setter($value);
-                }
-            }
             $em->persist($post);
             $em->flush();
             $body = [
                 "id" => $post->getId(),
-                "email" => $post->getEmail(),
-                "roles" => $post->getRoles(),
+                "author" => $post->getUser()->getEmail(),
+                "category" => $post->getCategory()->getTitle(),
+                "title" => $post->getTitle(),
+                "text" => $post->getText(),
                 "created_at" => $post->getCreatedAt(),
             ];
-            if (array_key_exists("password", $payload)) {
-                array_push($body, ["password" => $post->getPassword()]);
+            return ["statusCode" => 201, "body" => $body];
+        };
+        $POST_GET = function(string $payload, EntityManagerInterface $em) {
+            $payload = json_decode($payload, true);
+            if (is_array($payload) && array_key_exists("id", $payload)) {
+                $posts = $em->getRepository(Post::class)->findBy(
+                    ["id" => $payload["id"]]
+                );
+            } else {
+                $posts = $em->getRepository(Post::class)->findBy(
+                    [],
+                    [],
+                    array_key_exists("offset", $payload ?? []) ? $payload["offset"] : null,
+                    array_key_exists("start", $payload ?? []) ? $payload["start"] : null,
+                );
+            }
+            $body = [];
+            foreach ($posts as $p) {
+                $body[] = [
+                    "id" => $p->getId(),
+                    "author" => $p->getUser()->getEmail(),
+                    "category" => $p->getCategory()->getTitle(),
+                    "title" => $p->getTitle(),
+                    "text" => $p->getText(),
+                    "created_at" => $p->getCreatedAt(),
+                ];
             }
             return ["statusCode" => 200, "body" => $body];
         };
-        $POST_DELETE = function(string $payload, EntityManagerInterface $em) {
-            $user = $this->getUser();
-            if (!$user) {
-                return ["statusCode" => 401, "body" => null];
+        $POST_PATCH = function(string $payload, EntityManagerInterface $em) {
+            if (!$this->getUser()){
+                return ["statusCode" => 401, "body" => "Authentification REQUIERED"];
             }
             $payload = json_decode($payload, true);
-            if (!array_key_exists("id", $payload)) {
-                return ["statusCode" => 400, "body" => null];
+            if (!array_key_exists("id", $payload ?? [])) {
+                return ["statusCode" => 400, "body" => "'id' field REQUIERED"];
             }
-            $post = $em->getRepository(User::class)->findOneBy(["id" => $payload["id"]]);
+            $post = $em->getRepository(Post::class)->findOneBy(["id" => $payload["id"]]);
             if (!$post) {
-                return ["statusCode" => 400, "body" => null];
+                return ["statusCode" => 400, "body" => "No post with ID:".$payload["id"]];
+            }
+            if (!$this->isGranted("ROLE_ADMIN") || !($this->isGranted("ROLE_USER") && $post->getUser() == $this->getUser())) {
+                return ["statusCode" => 403, "body" => "Acces FORBIDDEN"];
+            }
+            unset($payload["id"]);
+            foreach ($payload as $k => $v) {
+                $setter = "set".ucfirst($k);
+                if (method_exists($post, $setter)) {
+                    $post->$setter($v);
+                }
+            }
+            $em->persist($post);
+            $UserPostModifie = new UserPostModifie();
+            $UserPostModifie->setPost($post);
+            $UserPostModifie->setUser($this->getUser());
+            $UserPostModifie->setUpdatedAt(new DateTimeImmutable());
+            $em->persist($UserPostModifie);
+            $em->flush();
+            $body = [
+                "id" => $post->getId(),
+                "author" => $post->getUser()->getEmail(),
+                "category" => $post->getCategory()->getTitle(),
+                "title" => $post->getTitle(),
+                "text" => $post->getText(),
+                "created_at" => $post->getCreatedAt(),
+            ];
+            return ["statusCode" => 200, "body" => $body];
+        };
+        $POST_DELETE = function(string $payload, EntityManagerInterface $em) {
+            if (!$this->getUser()){
+                return ["statusCode" => 401, "body" => "Authentification REQUIERED"];
+            }
+            $payload = json_decode($payload, true);
+            if (!array_key_exists("id", $payload ?? [])) {
+                return ["statusCode" => 400, "body" => "'id' field REQUIERED"];
+            }
+            $post = $em->getRepository(Post::class)->findOneBy(["id" => $payload["id"]]);
+            if (!$post) {
+                return ["statusCode" => 400, "body" => "No post with ID:".$payload["id"]];
+            }
+            if (!$this->isGranted("ROLE_ADMIN") || !($this->isGranted("ROLE_USER") && $post->getUser() == $this->getUser())) {
+                return ["statusCode" => 403, "body" => null];
             }
             $em->remove($post);
             $em->flush();
             $body = [
                 "id" => $payload["id"],
-                "email" => $post->getEmail(),
-                "roles" => $post->getRoles(),
+                "author" => $post->getUser()->getEmail(),
+                "category" => $post->getCategory()->getTitle(),
+                "title" => $post->getTitle(),
+                "text" => $post->getText(),
                 "created_at" => $post->getCreatedAt(),
             ];
             return ["statusCode" => 200, "body" => $body];
@@ -251,107 +224,58 @@ class ApiController extends AbstractController
         return $res;
     }
 
-    #[IsGranted('ROLE_ADMIN')]
-    #[Route('/category', name: 'app_api_category')]
-    public function apiCategory(Request $request): JsonResponse
+    #[Route('/category', name: 'app_api_category', methods: ["POST", "GET"])]
+    public function apiCategory(Request $request, EntityManagerInterface $em): JsonResponse
     {
-        $USER_POST = function(string $payload, EntityManagerInterface $em) {
+        $CATEGORY_POST = function(string $payload, EntityManagerInterface $em) {
+            if (!$this->getUser()){
+                return ["statusCode" => 401, "body" => "Authentification REQUIERED"];
+            } else if (!$this->isGranted("ROLE_ADMIN")) {
+                return ["statusCode" => 403, "body" => "Access FORBIDDEN"];
+            }
             $payload = json_decode($payload, true);
-            if (!array_key_exists("email", $payload) || !array_key_exists("password", $payload)) {
-                return ["statusCode" => 400, "body" => null];
-            }
-            if ($em->getRepository(User::class)->findOneBy(["email" => $payload["email"]])) {
-                return ["statusCode" => 400, "body" => null];
-            }
-            $user = new User();
-            $user->setEmail($payload["email"]);
-            $user->setPassword($hashedPassword);
-            $user->setCreatedAt(new \DateTimeImmutable());
-            $em->persist($user);
+            $category = new Category();
+            $category->setTitle(array_key_exists("title", $payload ?? []) ? $payload["title"] : "Pas de titre");
+            $category->setUser($this->getUser());
+            $category->setCreatedAt(new \DateTimeImmutable());
+            $em->persist($category);
             $em->flush();
-            $body = $user ? [
-                "id" => $user->getId(),
-                "email" => $user->getEmail(),
-                "roles" => $user->getRoles(),
-                "created_at" => $user->getCreatedAt(),
-            ] : null;
+            $body = [
+                "id" => $category->getId(),
+                "title" => $category->getTitle(),
+                "author" => $category->getUser()->getEmail(),
+                "created_at" => $category->getCreatedAt(),
+            ];
             return ["statusCode" => 201, "body" => $body];
         };
-        $USER_GET = function(string $payload, EntityManagerInterface $em) {
+        $CATEGORY_GET = function(string $payload, EntityManagerInterface $em) {
             $payload = json_decode($payload, true);
-            if (!array_key_exists("id", $payload)) {
-                return ["statusCode" => 400, "body" => null];
+            if (is_array($payload) && array_key_exists("id", $payload)) {
+                $categories = $em->getRepository(Category::class)->findBy(
+                    ["id" => $payload["id"]]
+                );
+            } else {
+                $categories = $em->getRepository(Category::class)->findBy(
+                    [],
+                    [],
+                    array_key_exists("offset", $payload ?? []) ? $payload["offset"] : null,
+                    array_key_exists("start", $payload ?? []) ? $payload["start"] : null,
+                );
             }
-            $user = $em->getRepository(User::class)->findOneBy(["id" => $payload["id"]]);
-            $body = $user ? [
-                "id" => $user->getId(),
-                "email" => $user->getEmail(),
-                "roles" => $user->getRoles(),
-                "created_at" => $user->getCreatedAt(),
-            ] : null;
-            return ["statusCode" => 200, "body" => $body];
-        };
-        $USER_PATCH = function(string $payload, EntityManagerInterface $em, UserPasswordHasherInterface $uph) {
-            $payload = json_decode($payload, true);
-            if (!array_key_exists("id", $payload)) {
-                return ["statusCode" => 400, "body" => null];
+            $body = [];
+            foreach ($categories as $c) {
+                $body[] = [
+                    "id" => $c->getId(),
+                    "title" => $c->getTitle(),
+                    "author" => $c->getUser()->getEmail(),
+                    "created_at" => $c->getCreatedAt(),
+                ];
             }
-            $user = $em->getRepository(User::class)->findOneBy(["id" => $payload["id"]]);
-            if (!$user) {
-                return ["statusCode" => 400, "body" => null];
-            }
-            unset($payload["id"]);
-            foreach ($payload as $key => $value) {
-                $setter = "set".ucfirst($key);
-                if (method_exists($user, $setter)) {
-                    if ($key === "password") {
-                        $hashedPassword = $uph->hashPassword(
-                            $user,
-                            $value,
-                        );
-                        $user->$setter($hashedPassword);
-                    } else {
-                        $user->$setter($value);
-                    }
-                }
-            }
-            $em->persist($user);
-            $em->flush();
-            $body = [
-                "id" => $user->getId(),
-                "email" => $user->getEmail(),
-                "roles" => $user->getRoles(),
-                "created_at" => $user->getCreatedAt(),
-            ];
-            if (array_key_exists("password", $payload)) {
-                array_push($body, ["password" => $user->getPassword()]);
-            }
-            return ["statusCode" => 200, "body" => $body];
-        };
-        $USER_DELETE = function(string $payload, EntityManagerInterface $em) {
-            $payload = json_decode($payload, true);
-            if (!array_key_exists("id", $payload)) {
-                return ["statusCode" => 400, "body" => null];
-            }
-            $user = $em->getRepository(User::class)->findOneBy(["id" => $payload["id"]]);
-            if (!$user) {
-                return ["statusCode" => 400, "body" => null];
-            }
-            $em->remove($user);
-            $em->flush();
-            $body = [
-                "id" => $payload["id"],
-                "email" => $user->getEmail(),
-                "roles" => $user->getRoles(),
-                "created_at" => $user->getCreatedAt(),
-            ];
             return ["statusCode" => 200, "body" => $body];
         };
         $action = match($request->getMethod()) {
-            "POST" => $USER_POST($request->getContent(), $em, $uph),
-            "GET" => $USER_GET($request->getContent(), $em),
-            "PATCH" => $USER_PATCH($request->getContent(), $em, $uph),
-            "DELETE" => $USER_DELETE($request->getContent(), $em),
+            "POST" => $CATEGORY_POST($request->getContent(), $em),
+            "GET" => $CATEGORY_GET($request->getContent(), $em),
             default => ["statusCode" => 405, "body" => null]
         };
         $res = new JsonResponse($action["body"]);
