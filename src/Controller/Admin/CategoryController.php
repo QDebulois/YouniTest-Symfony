@@ -3,7 +3,9 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Category;
+use App\Entity\UserCategoryModifie;
 use App\Form\CategoryType;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,20 +37,26 @@ class CategoryController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_category_show', methods: ['GET'])]
-    public function show(Category $category): Response
+    public function show(Category $category, EntityManagerInterface $em): Response
     {
         return $this->render('category/show.html.twig', [
             'category' => $category,
+            "history" => $em->getRepository(UserCategoryModifie::class)->findBy(["category" => $category], ["updated_at" => "DESC"]),
         ]);
     }
 
     #[Route('/{id}/edit', name: 'app_category_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Category $category, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Category $category, EntityManagerInterface $em): Response
     {
         $form = $this->createForm(CategoryType::class, $category);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            $userCategoryModifie = new UserCategoryModifie();
+            $userCategoryModifie->setCategory($category);
+            $userCategoryModifie->setUser($this->getUser());
+            $userCategoryModifie->setUpdatedAt(new DateTimeImmutable());
+            $em->persist($userCategoryModifie);
+            $em->flush();
             return $this->redirectToRoute('app_category_index', [], Response::HTTP_SEE_OTHER);
         }
         return $this->render('category/edit.html.twig', [

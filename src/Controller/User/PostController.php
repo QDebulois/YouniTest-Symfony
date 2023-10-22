@@ -3,7 +3,9 @@
 namespace App\Controller\User;
 
 use App\Entity\Post;
+use App\Entity\UserPostModifie;
 use App\Form\PostType;
+use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,7 +38,7 @@ class PostController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_post_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Post $post, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Post $post, EntityManagerInterface $em): Response
     {
         if ($post->getUser() != $this->getUser() && !$this->isGranted("ROLE_ADMIN")) {
             return $this->redirectToRoute('app_post_index', [], Response::HTTP_SEE_OTHER);
@@ -44,7 +46,12 @@ class PostController extends AbstractController
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            $userPostModifie = new UserPostModifie();
+            $userPostModifie->setPost($post);
+            $userPostModifie->setUser($this->getUser());
+            $userPostModifie->setUpdatedAt(new DateTimeImmutable());
+            $em->persist($userPostModifie);
+            $em->flush();
             return $this->redirectToRoute('app_post_index', [], Response::HTTP_SEE_OTHER);
         }
         return $this->render('post/edit.html.twig', [
