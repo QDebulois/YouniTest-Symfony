@@ -35,5 +35,7 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_post_new') }}">Create new</a>
+    {% if is_granted("ROLE_USER") %}
+      <a href="{{ path('app_post_new') }}">Create new</a>
+    {% endif %}
 {% endblock %}
