@@ -10,7 +10,9 @@
                 <th>Id</th>
                 <th>Titre</th>
                 <th>Créé le</th>
-                <th>Actions</th>
+                {% if is_granted('ROLE_ADMIN') %}
+                  <th>Actions</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -19,19 +21,21 @@
                 <td>{{ category.id }}</td>
                 <td>{{ category.title }}</td>
                 <td>{{ category.createdAt ? category.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-                <td>
-                    <a class="btn btn-primary" href="{{ path('app_category_show', {'id': category.id}) }}">Voir</a>
-                    <a class="btn btn-warning" href="{{ path('app_category_edit', {'id': category.id}) }}">Modifier</a>
-                </td>
+                {% if is_granted('ROLE_ADMIN') %}
+                  <td>
+                      <a class="btn btn-primary" href="{{ path('app_category_show', {'id': category.id}) }}">Voir</a>
+                      <a class="btn btn-warning" href="{{ path('app_category_edit', {'id': category.id}) }}">Modifier</a>
+                  </td>
+                {% endif %}
             </tr>
         {% else %}
             <tr>
-                <td colspan="4">Aucun élément enregistré</td>
+                <td colspan="{{ is_granted('ROLE_ADMIN') ? '4' : '3' }}">Aucun élément enregistré</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
     {% if is_granted("ROLE_ADMIN") %}
-      <a class="btn btn-success" href="{{ path('app_category_new') }}">Créer un titre</a>
+      <a class="btn btn-success" href="{{ path('app_category_new') }}">Créer une catégorie</a>
     {% endif %}
 {% endblock %}

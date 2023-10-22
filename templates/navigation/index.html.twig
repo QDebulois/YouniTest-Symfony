@@ -1,19 +1,21 @@
 <nav class="d-flex justify-content-arround gap-5 mx-5">
   <div class="list-group m-3">
     <a class="list-group-item {{ app.current_route == "app_home" ? "active" : "" }}" href="{{ path("app_home") }}">Accueil</a>
-    {% if is_granted('ROLE_USER') or is_granted('ROLE_ADMIN') %}
-      <a class="list-group-item {{ app.current_route == "app_post_new" ? "active" : "" }}" href="{{ path("app_post_new") }}">Créer un post</a>
-    {% endif %}
     <a class="list-group-item {{ app.current_route == "app_post_index" ? "active" : "" }}" href="{{ path("app_post_index") }}">Voir les posts</a>
-    {% if is_granted('ROLE_ADMIN') %}
-      <a class="list-group-item {{ app.current_route == "app_category_new" ? "active" : "" }}" href="{{ path("app_category_new") }}">Ajouter une catégorie</a>
-    {% endif %}
     <a class="list-group-item {{ app.current_route == "app_category_index" ? "active" : "" }}" href="{{ path("app_category_index") }}">Voir les catégories</a>
+    {% if is_granted('ROLE_USER') %}
+      <a class="list-group-item list-group-item-warning {{ app.current_route == "app_post_new" ? "active" : "" }}" href="{{ path("app_post_new") }}">Créer un post</a>
+    {% endif %}
+    {% if is_granted('ROLE_ADMIN') %}
+      <a class="list-group-item list-group-item-danger {{ app.current_route == "app_category_new" ? "active" : "" }}" href="{{ path("app_category_new") }}">Ajouter une catégorie</a>
+      <a class="list-group-item list-group-item-danger {{ app.current_route == "app_user_index" ? "active" : "" }}" href="{{ path("app_user_index") }}">Les utilisateurs</a>
+      <a class="list-group-item list-group-item-danger {{ app.current_route == "app_user_new" ? "active" : "" }}" href="{{ path("app_user_new") }}">Créer un utilisateur</a>
+    {% endif %}
     {% if not is_granted('IS_AUTHENTICATED_REMEMBERED') %}
-      <a class="list-group-item {{ app.current_route == "app_login" ? "active" : "" }}" href="{{ path("app_login") }}">Se connecter</a>
-      <a class="list-group-item {{ app.current_route == "app_user_new" ? "active" : "" }}" href="{{ path("app_user_new") }}">S'inscrire</a>
+      <a class="list-group-item list-group-item-info {{ app.current_route == "app_login" ? "active" : "" }}" href="{{ path("app_login") }}">Se connecter</a>
+      <a class="list-group-item list-group-item-success {{ app.current_route == "app_user_new" ? "active" : "" }}" href="{{ path("app_user_new") }}">S'inscrire</a>
     {% else %}
-      <a class="list-group-item" href="{{ path("app_logout") }}">Se déconnecter</a>
+      <a class="list-group-item list-group-item-info" href="{{ path("app_logout") }}">Se déconnecter</a>
     {% endif %}
   </div>
 

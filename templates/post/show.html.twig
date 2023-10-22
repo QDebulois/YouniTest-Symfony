@@ -11,6 +11,14 @@
                 <td>{{ post.id }}</td>
             </tr>
             <tr>
+                <th>Catégorie</th>
+                <td>{{ post.category.title }}</td>
+            </tr>
+            <tr>
+                <th>Auteur</th>
+                <td>{{ post.user.email }}</td>
+            </tr>
+            <tr>
                 <th>Title</th>
                 <td>{{ post.title }}</td>
             </tr>
@@ -25,6 +33,11 @@
         </tbody>
     </table>
     <a class="btn btn-primary" href="{{ path('app_post_index') }}">Voir les posts</a>
-    <a class="btn btn-warning" href="{{ path('app_post_edit', {'id': post.id}) }}">Modifier</a>
-    {{ include('post/_delete_form.html.twig') }}
+    {% if is_granted('ROLE_USER') and post.user == app.user %}
+      <a class="btn btn-warning" href="{{ path('app_post_edit', {'id': post.id}) }}">Modifier</a>
+      {{ include('post/_delete_form.html.twig') }}
+    {% elseif is_granted('ROLE_ADMIN') %}
+      <a class="btn btn-danger" href="{{ path('app_post_edit', {'id': post.id}) }}">Modifier</a>
+      {{ include('post/_delete_form.html.twig') }}
+    {% endif %}
 {% endblock %}

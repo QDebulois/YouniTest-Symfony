@@ -8,6 +8,8 @@
         <thead>
             <tr>
                 <th>Id</th>
+                <th>Catégorie</th>
+                <th>Auteur</th>
                 <th>Title</th>
                 <th>Text</th>
                 <th>Créé le</th>
@@ -18,17 +20,23 @@
         {% for post in posts %}
             <tr>
                 <td>{{ post.id }}</td>
+                <td>{{ post.category.title }}</td>
+                <td>{{ post.user.email }}</td>
                 <td>{{ post.title }}</td>
                 <td>{{ post.text }}</td>
                 <td>{{ post.createdAt ? post.createdAt|date('Y-m-d H:i:s') : '' }}</td>
                 <td>
-                    <a href="{{ path('app_post_show', {'id': post.id}) }}">Voir</a>
-                    <a href="{{ path('app_post_edit', {'id': post.id}) }}">Modifier</a>
+                  <a class="btn btn-primary" href="{{ path('app_post_show', {'id': post.id}) }}">Voir</a>
+                  {% if is_granted('ROLE_USER') and post.user == app.user %}
+                    <a class="btn btn-warning" href="{{ path('app_post_edit', {'id': post.id}) }}">Modifier</a>
+                  {% elseif is_granted('ROLE_ADMIN') %}
+                    <a class="btn btn-danger" href="{{ path('app_post_edit', {'id': post.id}) }}">Modifier</a>
+                  {% endif %}
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="5">Aucun élément trouvé</td>
+                <td colspan="7">Aucun élément trouvé</td>
             </tr>
         {% endfor %}
         </tbody>
