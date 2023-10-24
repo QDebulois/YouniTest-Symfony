@@ -13,6 +13,12 @@ security:
         # used to reload user from session & other features (e.g. switch_user)
         # used to reload user from session & other features (e.g. switch_user)
     firewalls:
+        refresh_token:
+            pattern: ^/api/token/refresh
+            stateless: true
+            refresh_jwt:
+                check_path: /api/token/refresh
+
         login:
             pattern: ^/api/user/login
             stateless: true

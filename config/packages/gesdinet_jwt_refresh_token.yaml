@@ -1,0 +1,20 @@
+gesdinet_jwt_refresh_token:
+    refresh_token_class: App\Entity\RefreshToken
+    ttl: 86400 # 24h
+    single_use: true
+
+    # Use cookies for the refresh token
+    cookie:
+        enabled: true
+        remove_token_from_body: true
+        # Cookie parameters
+        http_only: true
+        same_site: strict
+        secure: true # https Only
+        path: /api/token
+        domain: null
+
+# when@dev:
+#     lexik_jwt_authentication:
+#         ttl: 604800 # 7 jours
+

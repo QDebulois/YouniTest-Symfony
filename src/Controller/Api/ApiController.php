@@ -32,18 +32,18 @@ class ApiController extends AbstractController
     #[Route('/user', name: 'app_api_user', methods: ["GET", "DELETE"])]
     public function apiUser(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $uph): JsonResponse
     {
-        $USER_GET = function(string $payload, EntityManagerInterface $em) {
-            $payload = json_decode($payload, true);
-            if (is_array($payload) && array_key_exists("user_id", $payload)) {
+        $USER_GET = function(Request $request, EntityManagerInterface $em) {
+            $queryUserId = $request->query->get("user_id");
+            if ($queryUserId) {
                 $users = $em->getRepository(User::class)->findBy(
-                    ["id" => $payload["user_id"]],
+                    ["id" => $queryUserId],
                 );
             } else {
                 $users = $em->getRepository(User::class)->findBy(
                     [],
                     [],
-                    array_key_exists("offset", $payload ?? []) ? $payload["offset"] : null,
-                    array_key_exists("start", $payload ?? []) ? $payload["start"] : null,
+                    $request->query->get("offset"),
+                    $request->query->get("start"),
                 );
             }
             $body = [];
@@ -77,7 +77,7 @@ class ApiController extends AbstractController
             return ["statusCode" => 200, "body" => $body];
         };
         $action = match($request->getMethod()) {
-            "GET" => $USER_GET($request->getContent(), $em),
+            "GET" => $USER_GET($request, $em),
             "DELETE" => $USER_DELETE($request->getContent(), $em),
             default => ["statusCode" => 405, "body" => null]
         };
@@ -119,18 +119,18 @@ class ApiController extends AbstractController
             ];
             return ["statusCode" => 201, "body" => $body];
         };
-        $POST_GET = function(string $payload, EntityManagerInterface $em) {
-            $payload = json_decode($payload, true);
-            if (is_array($payload) && array_key_exists("post_id", $payload)) {
+        $POST_GET = function(Request $request, EntityManagerInterface $em) {
+            $queryPostId = $request->query->get("post_id");
+            if ($queryPostId) {
                 $posts = $em->getRepository(Post::class)->findBy(
-                    ["id" => $payload["post_id"]]
+                    ["id" => $queryPostId]
                 );
             } else {
                 $posts = $em->getRepository(Post::class)->findBy(
                     [],
                     [],
-                    array_key_exists("offset", $payload ?? []) ? $payload["offset"] : null,
-                    array_key_exists("start", $payload ?? []) ? $payload["start"] : null,
+                    $request->query->get("offset"),
+                    $request->query->get("start"),
                 );
             }
             $body = [];
@@ -214,7 +214,7 @@ class ApiController extends AbstractController
         };
         $action = match($request->getMethod()) {
             "POST" => $POST_POST($request->getContent(), $em),
-            "GET" => $POST_GET($request->getContent(), $em),
+            "GET" => $POST_GET($request, $em),
             "PATCH" => $POST_PATCH($request->getContent(), $em),
             "DELETE" => $POST_DELETE($request->getContent(), $em),
             default => ["statusCode" => 405, "body" => null]
@@ -248,18 +248,18 @@ class ApiController extends AbstractController
             ];
             return ["statusCode" => 201, "body" => $body];
         };
-        $CATEGORY_GET = function(string $payload, EntityManagerInterface $em) {
-            $payload = json_decode($payload, true);
-            if (is_array($payload) && array_key_exists("category_id", $payload)) {
+        $CATEGORY_GET = function(Request $request, EntityManagerInterface $em) {
+            $queryCategoryId = $request->query->get("category_id");
+            if ($queryCategoryId) {
                 $categories = $em->getRepository(Category::class)->findBy(
-                    ["id" => $payload["category_id"]]
+                    ["id" => $queryCategoryId]
                 );
             } else {
                 $categories = $em->getRepository(Category::class)->findBy(
                     [],
                     [],
-                    array_key_exists("offset", $payload ?? []) ? $payload["offset"] : null,
-                    array_key_exists("start", $payload ?? []) ? $payload["start"] : null,
+                    $request->query->get("offset"),
+                    $request->query->get("start"),
                 );
             }
             $body = [];
@@ -275,7 +275,7 @@ class ApiController extends AbstractController
         };
         $action = match($request->getMethod()) {
             "POST" => $CATEGORY_POST($request->getContent(), $em),
-            "GET" => $CATEGORY_GET($request->getContent(), $em),
+            "GET" => $CATEGORY_GET($request, $em),
             default => ["statusCode" => 405, "body" => null]
         };
         $res = new JsonResponse($action["body"]);
