@@ -25,7 +25,7 @@ class Post
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
@@ -87,7 +87,7 @@ class Post
         return $this->user;
     }
 
-    public function setUser(User $user): static
+    public function setUser(?User $user): static
     {
         $this->user = $user;
 
