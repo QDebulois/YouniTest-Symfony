@@ -7,7 +7,7 @@
       <a class="list-group-item list-group-item-warning {{ app.current_route == "app_post_new" ? "active" : "" }}" href="{{ path("app_post_new") }}">Créer un post</a>
     {% endif %}
     {% if is_granted('ROLE_ADMIN') %}
-      <a class="list-group-item list-group-item-danger {{ app.current_route == "app_category_new" ? "active" : "" }}" href="{{ path("app_category_new") }}">Ajouter une catégorie</a>
+      <a class="list-group-item list-group-item-danger {{ app.current_route == "app_category_new" ? "active" : "" }}" href="{{ path("app_category_new") }}">Créer une catégorie</a>
       <a class="list-group-item list-group-item-danger {{ app.current_route == "app_user_index" ? "active" : "" }}" href="{{ path("app_user_index") }}">Les utilisateurs</a>
       <a class="list-group-item list-group-item-danger {{ app.current_route == "app_user_new" ? "active" : "" }}" href="{{ path("app_user_new") }}">Créer un utilisateur</a>
     {% endif %}

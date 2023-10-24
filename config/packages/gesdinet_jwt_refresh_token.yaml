@@ -5,7 +5,7 @@ gesdinet_jwt_refresh_token:
 
     # Use cookies for the refresh token
     cookie:
-        enabled: true
+        enabled: false # Pas via cookie a cause du CORS
         remove_token_from_body: true
         # Cookie parameters
         http_only: true
@@ -17,4 +17,3 @@ gesdinet_jwt_refresh_token:
 # when@dev:
 #     lexik_jwt_authentication:
 #         ttl: 604800 # 7 jours
-
