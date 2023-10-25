@@ -1,4 +1,4 @@
-<nav class="d-flex justify-content-arround gap-5 mx-5">
+<nav class="d-flex justify-content-between gap-5 mx-5">
   <div class="list-group m-3">
     <a class="list-group-item {{ app.current_route == "app_home" ? "active" : "" }}" href="{{ path("app_home") }}">Accueil</a>
     <a class="list-group-item {{ app.current_route == "app_post_index" ? "active" : "" }}" href="{{ path("app_post_index") }}">Voir les posts</a>
@@ -10,6 +10,7 @@
       <a class="list-group-item list-group-item-danger {{ app.current_route == "app_category_new" ? "active" : "" }}" href="{{ path("app_category_new") }}">Créer une catégorie</a>
       <a class="list-group-item list-group-item-danger {{ app.current_route == "app_user_index" ? "active" : "" }}" href="{{ path("app_user_index") }}">Les utilisateurs</a>
       <a class="list-group-item list-group-item-danger {{ app.current_route == "app_user_new" ? "active" : "" }}" href="{{ path("app_user_new") }}">Créer un utilisateur</a>
+      <a class="list-group-item list-group-item-danger {{ app.current_route == "app_upload_logo" ? "active" : "" }}" href="{{ path("app_upload_logo") }}">Uploader un logo</a>
     {% endif %}
     {% if not is_granted('IS_AUTHENTICATED_REMEMBERED') %}
       <a class="list-group-item list-group-item-info {{ app.current_route == "app_login" ? "active" : "" }}" href="{{ path("app_login") }}">Se connecter</a>
@@ -17,6 +18,10 @@
     {% else %}
       <a class="list-group-item list-group-item-info" href="{{ path("app_logout") }}">Se déconnecter</a>
     {% endif %}
+  </div>
+
+  <div class="d-flex flex-column justify-content-center m-3">
+    <img src="/upload/logo.jpg" class="rounded" alt="VEUILLEZ UPLOADER UN LOGO EN ADMIN" width="250" height="250">
   </div>
 
   {% if app.user %}

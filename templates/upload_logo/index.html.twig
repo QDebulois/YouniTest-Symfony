@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello UploadLogoController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+    {{ form_start(form, {"attr": {"id": "form" }}) }}
+      {% if not form.vars.valid %}
+        <ul class="list-group">
+          {% for error in form.vars.errors %}
+            <li class="list-group-item list-group-item-danger">{{ error.message }}</li>
+          {% endfor %}
+          {% for child in form.children %}
+            {% if child.vars.errors is defined %}
+              {% for error in child.vars.errors %}
+                <li class="list-group-item list-group-item-danger">{{ error.message }}</li>
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {{ form_label(form.logo) }}
+      {{ form_widget(form.logo) }}
+      <p class="text-secondary fs-6"><i>Le logo du site, taille max: 4M.</i></p>
+      {{ form_row(form.submit) }}
+    {{ form_end(form) }}
+    <hr>
+    <div>
+      Voir le logo:
+      {% if isLogoExist %}
+        <a href="{{ asset("upload/logo.jpg") }}" target="_blank">logo.jpg</a>
+      {% else %}
+        <span class="alert alert-danger">Fichier indiponible, veuillez uploader un logo</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById("form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const formAction = e.target.action;
+    const formMethod = e.target.method.toUpperCase();
+    fetch(formAction, {
+      method: formMethod,
+      body: formData,
+    }).then((res) => {
+      if (!res.ok) {
+        alert("Erreur server side");
+        return
+      }
+      resContentType = res.headers.get("content-type");
+      if (resContentType != "application/json") {
+        res.text().then((dataHtml) => {
+          document.open();
+          document.write(dataHtml);
+          document.close();
+        })
+      }
+      res.json().then((dataJson) => {
+        if (dataJson.success) {
+          alert(dataJson.mess);
+          window.location.reload();
+        } else {
+          alert(dataJson.mess);
+        }
+      })
+    }).catch((err) => {
+      console.log(err);
+      alert("Erreur client side");
+    });
+  });
+</script>
+{% endblock %}
