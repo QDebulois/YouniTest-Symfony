@@ -9,6 +9,7 @@
             <tr>
                 <th>Id</th>
                 <th>Titre</th>
+                <th>Auteur</th>
                 <th>Créé le</th>
                 {% if is_granted('ROLE_ADMIN') %}
                   <th>Actions</th>
@@ -20,6 +21,7 @@
             <tr>
                 <td>{{ category.id }}</td>
                 <td>{{ category.title }}</td>
+                <td>{{ category.user.email }}</td>
                 <td>{{ category.createdAt ? category.createdAt|date('Y-m-d H:i:s') : '' }}</td>
                 {% if is_granted('ROLE_ADMIN') %}
                   <td>
